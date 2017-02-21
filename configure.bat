@@ -1,8 +1,8 @@
 @echo off
-REM    Wanda POS - Africa's Gift to the World
-REM    Copyright (c) 2014-2015 IT-Kamer & previous Unicenta POS and Wanda POS works
-REM    www.erp-university-africa.com
-REM	   http://sourceforge.net/projects/wandaposdapos
+REM    Scale POS By Nexus Leads
+REM    Copyright (c) 2014-2015  Nexus Leads
+REM   
+REM	
 REM
 REM    This file is part of Wanda POS.
 REM

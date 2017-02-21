@@ -114,6 +114,7 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
     public PaymentInfo executePayment() {
         if (m_dPaid - m_dTotal >= 0.0) {
             // pago completo
+            System.out.println("After OK is rpessed line 117");
             return new PaymentInfoCash_original(m_dTotal, m_dPaid);
         } else {
             // pago parcial
@@ -165,6 +166,7 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
         private DataLogicSystem dlSystem;
         private ThumbNailBuilder tnbbutton;
         private AppConfig m_config;
+        private String name;
         
         /**
          *
@@ -205,6 +207,9 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
             btn.setVerticalTextPosition(SwingConstants.BOTTOM);
             btn.setMargin(new Insets(2, 2, 2, 2));
             btn.addActionListener(new AddAmount(amount));
+      //      name=jTextField2.getText().toString();m_jNumber
+               
+          //  System.out.println("number is:"+m_jNumber.getText());
             jPanel6.add(btn);  
         }
     }
@@ -246,6 +251,10 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
         jLabel8 = new javax.swing.JLabel();
         m_jMoneyEuros = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         m_jKeys = new com.openbravo.editor.JEditorKeys();
@@ -256,6 +265,8 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
 
         jPanel5.setLayout(new java.awt.BorderLayout());
 
+        jPanel4.setAlignmentX(1.0F);
+        jPanel4.setAlignmentY(1.0F);
         jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanel4.setPreferredSize(new java.awt.Dimension(0, 70));
         jPanel4.setLayout(null);
@@ -292,7 +303,12 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
 
         jPanel5.add(jPanel4, java.awt.BorderLayout.NORTH);
 
-        jPanel6.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        jPanel6.setLayout(new java.awt.BorderLayout());
+        jPanel6.add(jLabel1, java.awt.BorderLayout.CENTER);
+        jPanel6.add(jLabel2, java.awt.BorderLayout.PAGE_START);
+        jPanel6.add(jLabel3, java.awt.BorderLayout.PAGE_END);
+        jPanel6.add(jPanel7, java.awt.BorderLayout.LINE_END);
+
         jPanel5.add(jPanel6, java.awt.BorderLayout.CENTER);
 
         add(jPanel5, java.awt.BorderLayout.CENTER);
@@ -317,6 +333,9 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
@@ -325,6 +344,7 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JLabel m_jChangeEuros;
     private com.openbravo.editor.JEditorKeys m_jKeys;
     private javax.swing.JLabel m_jMoneyEuros;

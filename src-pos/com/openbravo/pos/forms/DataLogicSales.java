@@ -32,7 +32,9 @@ import com.openbravo.pos.payment.PaymentInfo;
 import com.openbravo.pos.payment.PaymentInfoTicket;
 import com.openbravo.pos.promotion.PromoInfo;
 import com.openbravo.pos.promotion.PromoTypeInfo;
+import com.openbravo.pos.sales.JProductLineEdit;
 import com.openbravo.pos.ticket.*;
+import com.openbravo.pos.walkingcustomers.WalkingCustomers;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -50,12 +52,16 @@ public class DataLogicSales extends BeanFactoryDataSingle {
      *
      */
     protected Session s;
-
+    protected TicketInfo m_oTicket; 
+        protected AppView m_App;
     /**
      *
      */
     protected Datas[] auxiliarDatas;
-
+   private WalkingCustomerJPanel wcj ;
+  
+  
+  
     /**
      *
      */
@@ -65,6 +71,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
     /**
      *
      */
+    
         protected Datas[] paymenttabledatas;
 
     /**
@@ -81,7 +88,10 @@ public class DataLogicSales extends BeanFactoryDataSingle {
     private String pName;
     private Double getTotal;
     private Double getTendered;
-    private String getRetMsg;    
+    private String getRetMsg;   
+    private Double advance;
+    
+  
 
 // JG 3 Oct 2013
 
@@ -124,7 +134,8 @@ public class DataLogicSales extends BeanFactoryDataSingle {
             Datas.STRING, 
             Datas.STRING, 
             Datas.DOUBLE, 
-            Datas.STRING};
+            Datas.STRING,
+            Datas.DOUBLE};
         stockdatas = new Datas[] {
             Datas.STRING, 
             Datas.STRING, 
@@ -179,10 +190,12 @@ public class DataLogicSales extends BeanFactoryDataSingle {
     /**
      *
      * @param s
+     * @param w
      */
-    @Override
+    //@Override
     public void init(Session s){
         this.s = s;
+      
     }
 
     /**
@@ -837,6 +850,8 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 + "SUM(TICKETLINES.UNITS) AS UNITS, "
                 + "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE) AS AMOUNT, "
                 + "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE * (1.0 + TAXES.RATE)) AS TOTAL, "
+             /*   + "TICKETLINES.ADVANCE AS ADVANCE, " 
+                + "TICKETLINES.TOTALRECIEVABLE AS TOTALRECIEVABLE, "*/      
                 + "RECEIPTS.DATENEW, CUSTOMERS.NAME AS CNAME "
                 + "FROM RECEIPTS, CUSTOMERS, TICKETS, TICKETLINES "
                 + "LEFT OUTER JOIN PRODUCTS ON TICKETLINES.PRODUCT = PRODUCTS.ID "
@@ -847,6 +862,28 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 null,
                 CustomerTransaction.getSerializerRead()).list();
     }
+    
+    
+    /*   @SuppressWarnings("unchecked")
+    public final List<CustomerTransaction> getCustomersTransactionList() throws BasicException {
+        return new PreparedSentence(s,               
+                "SELECT TICKETS.TICKETID, PRODUCTS.NAME AS PNAME, "
+                + "SUM(TICKETLINES.UNITS) AS UNITS, "
+                + "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE) AS AMOUNT, "
+                + "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE * (1.0 + TAXES.RATE)) AS TOTAL, "
+                + "TICKETLINES.ADVANCE AS ADVANCE, " 
+                + "TICKETLINES.TOTALRECIEVABLE AS TOTALRECIEVABLE, "      
+                + "RECEIPTS.DATENEW, CUSTOMERS.NAME AS CNAME "
+                + "FROM RECEIPTS, CUSTOMERS, TICKETS, TICKETLINES "
+                + "LEFT OUTER JOIN PRODUCTS ON TICKETLINES.PRODUCT = PRODUCTS.ID "
+                + "LEFT OUTER JOIN TAXES ON TICKETLINES.TAXID = TAXES.ID  "
+                + "WHERE CUSTOMERS.ID = TICKETS.CUSTOMER AND TICKETLINES.PRODUCT = PRODUCTS.ID AND RECEIPTS.ID = TICKETS.ID AND TICKETS.ID = TICKETLINES.TICKET "
+                + "GROUP BY CUSTOMERS.NAME, RECEIPTS.DATENEW, TICKETS.TICKETID, PRODUCTS.NAME, TICKETS.TICKETTYPE,TICKETLINES.ADVANCE,TICKETLINES.TOTALRECIEVABLE "
+                + "ORDER BY RECEIPTS.DATENEW DESC, PRODUCTS.NAME",
+                null,
+                CustomerTransaction.getSerializerRead()).list();
+    }
+      */
     
     /**
      *
@@ -1113,25 +1150,40 @@ public Object transact() throws BasicException {
             );
 
     // new ticket
+
+//final JProductLineEdit JLE =  new JProductLineEdit();
     new PreparedSentence(s
-        , "INSERT INTO TICKETS (ID, TICKETTYPE, TICKETID, PERSON, CUSTOMER) VALUES (?, ?, ?, ?, ?)"
+        , "INSERT INTO TICKETS (ID, TICKETTYPE, TICKETID, PERSON, CUSTOMER,WALKINCUSTOMER) VALUES (?, ?, ?, ?, ?,?)"
         , SerializerWriteParams.INSTANCE
         ).exec(new DataParams() {
             @Override
     public void writeValues() throws BasicException {
+     wcj = new WalkingCustomerJPanel();
             setString(1, ticket.getId());
             setInt(2, ticket.getTicketType());
             setInt(3, ticket.getTicketId());
             setString(4, ticket.getUser().getId());
+           
             setString(5, ticket.getCustomerId());
+           
+            setString(6,wcj.getCustomerName());
+            
+            
         }
     }
             );
 
     SentenceExec ticketlineinsert = new PreparedSentence(s
-        , "INSERT INTO TICKETLINES (TICKET, LINE, PRODUCT, ATTRIBUTESETINSTANCE_ID, UNITS, PRICE, TAXID, ATTRIBUTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        , "INSERT INTO TICKETLINES (TICKET, LINE, PRODUCT, ATTRIBUTESETINSTANCE_ID, UNITS, PRICE, TAXID, ATTRIBUTES,WALKINCUSTOMERS,ADVANCE,TOTALRECIEVABLE) VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?)"
+        , SerializerWriteBuilder.INSTANCE);
+    
+    /* SentenceExec wCustomersInsert = new PreparedSentence(s
+        , "INSERT INTO WALKINGCUSTOMERS (NAME) VALUES (?)"
         , SerializerWriteBuilder.INSTANCE);
   
+     wCustomersInsert.exec();
+    
+    */
     for (TicketLineInfo l : ticket.getLines()) {
         ticketlineinsert.exec(l);
 // JG 25.06.2011 if (l.getProductID() != null) //
@@ -1146,7 +1198,7 @@ public Object transact() throws BasicException {
                 location,
                 l.getProductID(),
                 l.getProductAttSetInstId(), -l.getMultiply(), l.getPrice(),
-                ticket.getUser().getName()                         
+                ticket.getUser().getName(),l.getwCustomers()
             });
         }
     }
@@ -1154,11 +1206,11 @@ public Object transact() throws BasicException {
     SentenceExec paymentinsert = new PreparedSentence(s
 //JG 22 Oct CCardName
 //            , "INSERT INTO PAYMENTS (ID, RECEIPT, PAYMENT, TOTAL, TRANSID, RETURNMSG, TENDERED) VALUES (?, ?, ?, ?, ?, ?, ?)"
-          , "INSERT INTO PAYMENTS (ID, RECEIPT, PAYMENT, TOTAL, TRANSID, RETURNMSG, TENDERED, CARDNAME) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+          , "INSERT INTO PAYMENTS (ID, RECEIPT, PAYMENT, TOTAL, TRANSID, RETURNMSG, TENDERED, CARDNAME,ADVANCE) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)"
         , SerializerWriteParams.INSTANCE);
                 
                 for (final PaymentInfo p : ticket.getPayments()) {
-                    payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage());  
+                    payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage(),ticket.getAdvance());  
                 }
 
     //for (final PaymentInfo p : ticket.getPayments()) {
@@ -1169,6 +1221,7 @@ public Object transact() throws BasicException {
             getTotal = payments.getPaidAmount(pName);
             getTendered = payments.getTendered(pName);
             getRetMsg = payments.getRtnMessage(pName);
+            advance =  payments.getAdvancePay(pName);
             payments.removeFirst(pName);                        
             
             setString(1, UUID.randomUUID().toString());
@@ -1180,6 +1233,7 @@ public Object transact() throws BasicException {
             setDouble(7, getTendered);
 // JG 22 Oct 13 - CCard Name
             setString(8, getCardName);
+            setDouble(9, advance);
             payments.removeFirst(pName);
         }});
             
@@ -1654,6 +1708,17 @@ public Object transact() throws BasicException {
             , new String[] {"ID", AppLocal.getIntString("label.locationname"), AppLocal.getIntString("label.locationaddress")}
             , new Datas[] {Datas.STRING, Datas.STRING, Datas.STRING}
             , new Formats[] {Formats.STRING, Formats.STRING, Formats.STRING}
+            , new int[] {0}
+        );
+    }
+    /*incomplete*/
+     public final TableDefinition getTableWalkingCustomers() {
+        return new TableDefinition(s,
+            "WALKINGCUSTOMERS"
+            , new String[] {"ID", "NAME"}
+           // , new String[] {"ID", AppLocal.getIntString("label.name")}
+            , new Datas[] {Datas.STRING, Datas.STRING}
+            , new Formats[] {Formats.STRING, Formats.STRING}
             , new int[] {0}
         );
     }

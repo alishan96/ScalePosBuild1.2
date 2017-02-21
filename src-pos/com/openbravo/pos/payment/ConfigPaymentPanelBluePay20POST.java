@@ -117,6 +117,11 @@ public class ConfigPaymentPanelBluePay20POST extends javax.swing.JPanel implemen
 
         jtxtSecretKey.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jtxtSecretKey.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtSecretKey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtxtSecretKeyActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -155,6 +160,10 @@ public class ConfigPaymentPanelBluePay20POST extends javax.swing.JPanel implemen
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jtxtSecretKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtxtSecretKeyActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtxtSecretKeyActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

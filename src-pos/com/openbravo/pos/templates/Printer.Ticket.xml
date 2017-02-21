@@ -24,18 +24,30 @@
 
 <display>
 	<line><text align="left" length="10">Total</text><text align="right" length="10">${ticket.printTotal()}</text></line>
-	<line><text align="center" length="20">Thank you for your custom</text></line>
+	<line><text align="left" length="20">Thank you For Your Customer</text></line>
+       
+       
+        
 </display>
 
 <ticket>
 	<image>Printer.Ticket.Logo</image>
 	<line></line>
-
-	<line><text align="center" length="42">Wanda POS</text></line>
-	<line><text align="center" length="42">Touch Friendly Point Of Sale</text></line>
-	<line><text align="center" length="42">Copyright (c) 2014-2015 Wanda POS</text></line>
+        
+	<line><text align="center" length="42">Sky Vision</text></line>
+	<!--<line><text align="center" length="42">A product by NexusLeads Consultants</text></line> -->
+	<line><text align="center" length="43">Copyright(c)2015-2016 Nexus Leads Scale POS</text></line>
 	<line><text align="center" length="42">Printer.Ticket</text></line>
 	<line></line>
+
+
+               <!-- #foreach ($ticketline in $ticket.getLines())
+              
+                 <line><text align ="left" length="15">Customer:</text><text>${ticketline.printCustomer()}</text></line>
+                #end
+                -->
+       
+       
 
 	#if (${ticket.ticketType} == 0)
 		<line><text align="left" length="15">Receipt:</text><text>${ticket.printId()}</text></line>
@@ -47,9 +59,18 @@
 		<line><text align="left" length="15">Date:</text><text>${ticket.printDate()}</text></line>
 
 	#if ($ticket.getCustomer())
+     
 		<line><text align="left" length="15">Customer:</text><text>${ticket.getCustomer().printName()}</text></line>
 		<line><text align="left" length="15">Account #:</text><text>${ticket.getCustomer().printTaxid()}</text></line>
 		<line><text align="left" length="15">Current Debt:</text><text>${ticket.getCustomer().printCurDebt()}</text></line>
+                
+            <!-- adding -->    #else 
+            <!-- adding --> #foreach ($ticketline in $ticket.getLines())
+            <!-- adding -->  #if($ticketline.printCustomer())
+            <!-- adding -->   <line><text align ="left" length="15">Customer:</text><text>${ticketline.printCustomer()}</text></line>
+            <!-- adding -->     #end
+            #end
+              
 	#end
 
 	#if (${tickettext.place} != ${place})
@@ -71,16 +92,44 @@
 		<text align ="right" length="8">${ticketline.printPriceTax()}</text>
 		<text align ="right" length="7">x${ticketline.printMultiply()}</text>
 		<text align ="right" length="10">${ticketline.printValue()}</text>
+              
 	</line>
+        
+     <line><text align ="left" length="42">${ticketline.productAttSetInstDesc}</text></line>
 
 	#if ($ticketline.productAttSetInstId)
-		<line><text align ="left" length="42">${ticketline.productAttSetInstDesc}</text></line>
+		
 	#end
+        
+        <line><text align="left" length="42">------------------------------------------</text></line>
+        
+        
 #end
-	<line><text align="left" length="42">------------------------------------------</text></line>
+        
+	
 	<line><text>Items count: </text><text align ="left" length="14">${ticket.printArticlesCount()}</text></line>
 	<line></line>
 	<line size="1"><text align ="left" length="16" bold="true">Total</text><text align ="right" length="26" bold="true">${ticket.printTotal()}</text></line>
+            <!-- adding --> 
+            
+             
+             
+              <line><text align ="left" length="16" bold="true">Advance:</text><text align="right" length="26" bold="true">${ticket.printAdvance()}</text></line>
+             <line><text align ="left" length="16" bold="true">TotalRecievable:</text><text align="right" length="26" bold="true">${ticket.printReceivableTotal()}</text></line>
+           <!--  #foreach ($ticketline in $ticket.getLines())
+             
+          
+           
+             #if($ticketline.printCustomer())
+         
+              <line><text align ="left" length="16" bold="true">Advance:</text><text align="right" length="26" bold="true">${ticketline.printAdvance()}</text></line>
+             <line><text align ="left" length="16" bold="true">TotalRecievable:</text><text align="right" length="26" bold="true">${ticketline.printRecievableTotal()}</text></line>
+            
+            
+              #end
+             
+            #end-->
+             
 
 #foreach ($paymentline in $ticket.payments)
 
@@ -165,8 +214,8 @@
 #end
 
 	<line></line>
-	<line><text align="center" length="42">Thank you for your custom</text></line>
-	<line><text align="center" length="42">Please Call Again</text></line>
+	<line><text align="center" length="42">http://www.nexusleads.pk</text></line>
+	<line><text align="center" length="42">Find us on Facebook</text></line>
 
 </ticket>
 

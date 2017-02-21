@@ -10,26 +10,49 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="ARG" class="java.lang.Object" isForPrompting="false"/>
 	<queryString>
+  <!--ADDING -->
+  
 		<![CDATA[SELECT
+CLOSEDCASH.HOST,
+CLOSEDCASH.MONEY,
+CLOSEDCASH.DATESTART,
+CLOSEDCASH.DATEEND,
+PAYMENTS.PAYMENT,
+SUM(PAYMENTS.TOTAL) AS TOTAL,
+SUM(CLOSEDCASH.CLDCASH) AS CASH,
+SUM(PAYMENTS.ADVANCE) AS ADVANCE
+FROM CLOSEDCASH, PAYMENTS, RECEIPTS, CASHVALUE
+WHERE CLOSEDCASH.MONEY = RECEIPTS.MONEY  AND PAYMENTS.RECEIPT = RECEIPTS.ID
+GROUP BY CLOSEDCASH.HOST, CLOSEDCASH.MONEY, CLOSEDCASH.DATESTART, CLOSEDCASH.DATEEND, PAYMENTS.PAYMENT, CLOSEDCASH.CLDCASH, PAYMENTS.ADVANCE
+ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.DATESTART]]> 
+<!--
+<![CDATA[SELECT
 CLOSEDCASH.HOST,
 CLOSEDCASH.HOSTSEQUENCE,
 CLOSEDCASH.MONEY,
 CLOSEDCASH.DATESTART,
 CLOSEDCASH.DATEEND,
 PAYMENTS.PAYMENT,
-SUM(PAYMENTS.TOTAL) AS TOTAL
-FROM CLOSEDCASH, PAYMENTS, RECEIPTS
-WHERE CLOSEDCASH.MONEY = RECEIPTS.MONEY AND PAYMENTS.RECEIPT = RECEIPTS.ID
-GROUP BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE, CLOSEDCASH.MONEY, CLOSEDCASH.DATESTART, CLOSEDCASH.DATEEND, PAYMENTS.PAYMENT
-ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE]]>
+SUM(PAYMENTS.TOTAL) AS TOTAL,
+SUM(CASHVALUE.CASH) AS CASH,
+SUM(PAYMENTS.ADVANCE) AS ADVANCE
+FROM CLOSEDCASH, PAYMENTS, RECEIPTS, CASHVALUE
+WHERE CLOSEDCASH.MONEY = RECEIPTS.MONEY  AND CASHVALUE.MONEY = RECEIPTS.MONEY AND PAYMENTS.RECEIPT = RECEIPTS.ID
+GROUP BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE, CLOSEDCASH.MONEY, CLOSEDCASH.DATESTART, CLOSEDCASH.DATEEND, PAYMENTS.PAYMENT, CASHVALUE.CASH, PAYMENTS.ADVANCE
+ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE]]> 
+-->
+<!--ADDING -->
 	</queryString>
+        
 	<field name="TOTAL" class="java.lang.Double"/>
 	<field name="HOST" class="java.lang.String"/>
 	<field name="MONEY" class="java.lang.String"/>
 	<field name="DATESTART" class="java.util.Date"/>
 	<field name="DATEEND" class="java.util.Date"/>
 	<field name="PAYMENT" class="java.lang.String"/>
-	<field name="HOSTSEQUENCE" class="java.lang.Integer"/>
+	<!--<field name="HOSTSEQUENCE" class="java.lang.Integer"/>-->
+        <field name="ADVANCE" class="java.lang.Double"/>
+        <field name="CASH" class="java.lang.Double"/>
 	<background>
 		<band/>
 	</background>
@@ -138,13 +161,13 @@ ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE]]>
 	</columnHeader>
 	<detail>
 		<band height="14">
-			<textField>
+			<!--<textField>
 				<reportElement key="textField-9" x="115" y="0" width="60" height="13"/>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{HOSTSEQUENCE}]]></textFieldExpression>
-			</textField>
+			</textField>-->
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-10" mode="Opaque" x="191" y="0" width="110" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -171,6 +194,7 @@ ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE]]>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[str("transpayment." + (String)field_PAYMENT.getValue())]]></textFieldExpression>
 			</textField>
+                        <!-- ADDING -->
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-12" mode="Opaque" x="435" y="0" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -182,8 +206,9 @@ ORDER BY CLOSEDCASH.HOST, CLOSEDCASH.HOSTSEQUENCE]]>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" lineSpacing="Single">
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{TOTAL})]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{CASH})]]></textFieldExpression>
 			</textField>
+                        <!-- ADDING -->
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-8" mode="Opaque" x="0" y="0" width="110" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>

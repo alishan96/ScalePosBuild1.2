@@ -39,6 +39,8 @@ public abstract class PaymentInfo {
      * @return
      */
     public abstract double getTotal();
+    
+   // public abstract double getAdvance();
 
     /**
      *
@@ -56,7 +58,7 @@ public abstract class PaymentInfo {
      *
      * @return
      */
-    public abstract double getPaid();
+     public abstract double getPaid();
 
     /**
      *

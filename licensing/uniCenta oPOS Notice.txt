@@ -1,7 +1,7 @@
 ﻿General Public License
 
-This file is part of Wanda POS
-www.erp-university-africa.com
+Scale POS By Nexus Leads
+REM    Copyright (c) 2014-2015  Nexus Leads
 
 This license file applies to the Wanda POS software 
 (the "Wanda POS Software"), except as described in B) and C) below.

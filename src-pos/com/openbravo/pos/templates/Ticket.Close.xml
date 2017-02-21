@@ -40,9 +40,10 @@ JOptionPane pane = new JOptionPane();
 Font originalFont=pane.getFont();
 
 UIManager.put("OptionPane.buttonFont", new FontUIResource(new Font("ARIAL",Font.PLAIN,20)));
-message = "Change: " + change;
+message = "Chaa: " + change;
  JLabel FontText = new JLabel(message);
- FontText.setFont (new Font ( "Arial", Font.BOLD, 36) );
+ FontText.setFont (new Font ( "Arial", Font.BOLD, 20) );
+ JLabel Fontext = new JLabel("Number");
 
 if(isCash) {
      JOptionPane pane = new JOptionPane();

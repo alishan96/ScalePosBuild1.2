@@ -10,9 +10,14 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="ARG" class="java.lang.Object" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[SELECT RECEIPTS.DATENEW,PAYMENTS.PAYMENT,PAYMENTS.NOTES,PAYMENTS.TOTAL
-                    FROM PAYMENTS,RECEIPTS
-                    WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.TOTAL <0]]>
+		<!--<![CDATA[SELECT RECEIPTS.DATENEW,PAYMENTS.PAYMENT,PAYMENTS.NOTES, PAYMENTS.TOTAL, CLOSEDCASH.CLDCASH
+                    FROM PAYMENTS,RECEIPTS, CLOSEDCASH
+                    WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND CLOSEDCASH.MONEY = RECEIPTS.MONEY <0]]> -->
+                    <![CDATA[SELECT RECEIPTS.DATENEW,PAYMENTS.PAYMENT,PAYMENTS.NOTES, PAYMENTS.TOTAL, CLOSEDCASH.CLDCASH
+                    FROM PAYMENTS,RECEIPTS, CLOSEDCASH
+                    WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.PAYMENT = 'cashin' OR PAYMENTS.PAYMENT = 'cashout' AND CLOSEDCASH.MONEY = RECEIPTS.MONEY  <0]]>
+                    
+                    
 	</queryString>
 	<field name="DATENEW" class="java.util.Date"/>
 	<field name="PAYMENT" class="java.lang.String"/>

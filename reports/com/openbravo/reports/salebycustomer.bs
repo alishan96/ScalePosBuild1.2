@@ -30,10 +30,12 @@ report.setSentence("SELECT " +
                 "PRODUCTS.NAME AS PNAME, " +                
                 "TICKETS.TICKETTYPE, " +
                 "SUM(TICKETLINES.UNITS) AS UNITS, " +
-                "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE) AS TOTAL " +
+                "SUM(TICKETLINES.UNITS * TICKETLINES.PRICE) AS TOTAL, " +
+                "TICKETLINES.ADVANCE AS ADVANCE, " +
+                "TICKETLINES.TOTALRECIEVABLE AS TOTALRECIEVABLE " +
                 "FROM RECEIPTS, CUSTOMERS, TICKETS, TICKETLINES LEFT OUTER JOIN PRODUCTS ON TICKETLINES.PRODUCT = PRODUCTS.ID " +
                 "WHERE CUSTOMERS.ID = TICKETS.CUSTOMER AND TICKETLINES.PRODUCT = PRODUCTS.ID AND RECEIPTS.ID = TICKETS.ID AND TICKETS.ID = TICKETLINES.TICKET AND ?(QBF_FILTER) " +
-                "GROUP BY CUSTOMERS.NAME, RECEIPTS.DATENEW, TICKETS.TICKETID, PRODUCTS.NAME, TICKETS.TICKETTYPE " +
+                "GROUP BY CUSTOMERS.NAME, RECEIPTS.DATENEW, TICKETS.TICKETID, PRODUCTS.NAME, TICKETS.TICKETTYPE, TICKETLINES.ADVANCE, TICKETLINES.TOTALRECIEVABLE " +
                 "ORDER BY CUSTOMERS.NAME, PRODUCTS.NAME, RECEIPTS.DATENEW");
 
 report.addParameter("RECEIPTS.DATENEW");
@@ -55,8 +57,12 @@ report.addField("CNAME", com.openbravo.data.loader.Datas.STRING);
 report.addField("DATENEW", com.openbravo.data.loader.Datas.TIMESTAMP);
 report.addField("TICKETID", com.openbravo.data.loader.Datas.STRING);
 report.addField("PNAME", com.openbravo.data.loader.Datas.STRING);
-report.addField("TICKETTYPE", com.openbravo.data.loader.Datas.INT);
+report.addField("TICKETTYPE", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("UNITS", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("TOTAL", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("ADVANCE", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("TOTALRECIEVABLE", com.openbravo.data.loader.Datas.DOUBLE);
+
+
 
 report;

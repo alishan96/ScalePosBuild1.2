@@ -301,7 +301,7 @@ public class JRootApp extends JPanel implements AppView {
         m_sInventoryLocation = m_propsdb.getProperty("location");
         if (m_sInventoryLocation == null) {
             m_sInventoryLocation = "0";
-            m_propsdb.setProperty("location", m_sInventoryLocation);
+            m_propsdb.setProperty("location",m_sInventoryLocation);
             m_dlSystem.setResourceAsProperties(m_props.getHost() + "/properties", m_propsdb);
         }
 
@@ -341,9 +341,9 @@ public class JRootApp extends JPanel implements AppView {
 
         // display the new logo if set
         String newLogo = m_props.getProperty("start.logo");
-        if (newLogo != null) {
+        if (newLogo != null) {//wandapos_logo.png
             if ("".equals(newLogo)) {
-                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/wandapos_logo.png")));
+                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/nl2.png")));
             } else {
                 jLabel1.setIcon(new javax.swing.ImageIcon(newLogo));
             }
@@ -353,15 +353,15 @@ public class JRootApp extends JPanel implements AppView {
         String newText = m_props.getProperty("start.text");
         if (newText != null) {
             if (newText.equals("")) {
-                jLabel1.setText("<html><center>Wanda POS - Africa's Gift to the World<br>"
-                        + "Copyright \u00A9 2014-2015 IT Kamer <br>"
-                        + "http://www.wandaapos.com/<br>"
+                jLabel1.setText("<html><center>Scale A Product by Nexus leads Consutlatnts<br>"
+                        + "Copyright \u00A9 nexusleads2014-2015 Nexus Leads Consultants <br>"
+                        + "http://www..pk/<br>"
                         + "<br>"
-                        + "Wanda POS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br>"
+                        + "Supply chain management encompasses the planning and management of all activities involved in sourcing, procurement, conversion, and logistics management.<br>"
                         + "<br>"
-                        + "Wanda POS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br>"
+                        + "The key supply chain processes includes, Customer relationship management, Customer service management, Demand management style, Order fulfillment, Manufacturing flow management, Supplier relationship management, Product development and commercialization & Returns management.<br>"
                         + "<br>"
-                        + "You should have received a copy of the GNU General Public License along with Wanda POS.  If not, see http://www.gnu.org/licenses/<br>"
+                        + "<br>"
                         + "</center>");
             } else {
                 try {

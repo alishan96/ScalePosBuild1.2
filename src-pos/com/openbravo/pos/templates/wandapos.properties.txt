@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-	<comment>Wanda POS Synchronisation</comment>
+	<comment>Nexus Lead's Scale Synchronisation</comment>
         <entry key="id">11</entry>
 	<entry key="pos">HQ</entry>
 	<entry key="activemq-brokerUrl">tcp://localhost:61616</entry>

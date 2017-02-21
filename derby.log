@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
-Sat Oct 11 13:19:30 WAT 2014:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.9.1.0 - (1344872): instance a816c00e-0148-ff26-42d5-000004f8ccd8 
-on database directory C:\Users\TATIOTI-IDEAPAD\Wanda POS-database  with class loader sun.misc.Launcher$AppClassLoader@5c4aca27 
-Loaded from file:/D:/IT%20Kamer/IT-Kamer%20Project/Wanda-POS/lib/derby.jar
+Mon Feb 20 21:52:59 PKT 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.9.1.0 - (1344872): instance a816c00e-015a-5c70-c70d-0000007baa68 
+on database directory C:\Users\Nadeem\scalepos-database  with class loader sun.misc.Launcher$AppClassLoader@187f9e0 
+Loaded from file:/D:/Alishan%20Scale%20Pos/For%20alishan/Alishan/Scale-POS_Sky%20VIsion/For%20Lasani/Scale-Pos%20Verion%201.1/ScalePOS/lib/derby.jar
 java.vendor=Oracle Corporation
-java.runtime.version=1.7.0_40-b43
-user.dir=D:\IT Kamer\IT-Kamer Project\Wanda-POS
+java.runtime.version=1.8.0_102-b14
+user.dir=D:\Alishan Scale Pos\For alishan\Alishan\Scale-POS_Sky VIsion\For Lasani\Scale-Pos Verion 1.1\ScalePOS
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

@@ -43,6 +43,13 @@ public class PaymentsModel {
     private Date m_dDateStart;
     private Date m_dDateEnd;       
     private Date rDate;
+    private Double advTemp;
+    private Double tempPay;
+    private Double tempPrice;
+    private Double payCashIn;
+    private Double payCashOut;
+    //private java.util.List<PaymentsLine> adv;
+    
             
     private Integer m_iPayments;
     private Double m_dPaymentsTotal;
@@ -59,6 +66,8 @@ public class PaymentsModel {
     private Integer m_iProductSalesRows;
     private Double m_dProductSalesTotalUnits;
     private Double m_dProductSalesTotal;
+    private Double m_dAdvanceTotal;
+   
     private java.util.List<ProductSalesLine> m_lproductsales;
     // end
     
@@ -76,6 +85,7 @@ public class PaymentsModel {
     private final static String[] SALEHEADERS = {"label.taxcash", "label.totalcash"};
 
     private PaymentsModel() {
+        
     }
 
     /**
@@ -90,12 +100,29 @@ public class PaymentsModel {
         p.m_dPaymentsTotal = new Double(0.0);
 // JG 16 May 2013 use diamond inference
         p.m_lpayments = new ArrayList<>();
+      //  p.adv = new ArrayList<>();
 
 // JG 9 Nov 12
         p.m_iCategorySalesRows = new Integer(0);
         p.m_dCategorySalesTotalUnits = new Double(0.0);
         p.m_dCategorySalesTotal = new Double(0.0);
-        p.m_lcategorysales = new ArrayList<>();        
+        p.m_dAdvanceTotal = new Double(0.0);
+        p.advTemp = new Double(0.0);
+        p.tempPay = new Double(0.0);
+    //  p.Temp = new Double(0.0);
+        p.tempPrice = new Double(0.0);
+        p.payCashIn = new Double(0.0);
+        p.payCashOut = new Double(0.0);
+        p.m_lcategorysales = new ArrayList<>(); 
+        
+       /* if(p.m_dPaymentsTotal == null){
+        p.tempPay = p.tempPay - p.temp;
+        
+        }*/
+       
+       
+       
+        
 // end
         p.m_iSales = null;
         p.m_dSalesBase = null;
@@ -138,23 +165,31 @@ public class PaymentsModel {
 // JG 9 Nov 12
         // Product category Sales
         Object[] valcategorysales = (Object []) new StaticSentence(app.getSession()
-            , "SELECT COUNT(*), SUM(TICKETLINES.UNITS), SUM((TICKETLINES.PRICE + TICKETLINES.PRICE * TAXES.RATE ) * TICKETLINES.UNITS) " +
-              "FROM TICKETLINES, TICKETS, RECEIPTS, TAXES " +
+            , "SELECT COUNT(*),SUM(TICKETLINES.ADVANCE), SUM(TICKETLINES.UNITS), SUM((TICKETLINES.PRICE + TICKETLINES.PRICE * TAXES.RATE ) * TICKETLINES.UNITS) " +
+              "FROM  TICKETLINES,TICKETS, RECEIPTS, TAXES " +
               "WHERE TICKETLINES.TICKET = TICKETS.ID AND TICKETS.ID = RECEIPTS.ID AND TICKETLINES.TAXID = TAXES.ID AND TICKETLINES.PRODUCT IS NOT NULL AND RECEIPTS.MONEY = ? " +
               "GROUP BY RECEIPTS.MONEY"
             , SerializerWriteString.INSTANCE
-            , new SerializerReadBasic(new Datas[] {Datas.INT, Datas.DOUBLE, Datas.DOUBLE}))
+            , new SerializerReadBasic(new Datas[] {Datas.INT, Datas.DOUBLE, Datas.DOUBLE,Datas.DOUBLE}))
             .find(app.getActiveCashIndex());
 
         if (valcategorysales == null) {
             p.m_iCategorySalesRows = new Integer(0);
             p.m_dCategorySalesTotalUnits = new Double(0.0);
             p.m_dCategorySalesTotal = new Double(0.0);
+            p.m_dAdvanceTotal = new Double(0.0);
         } else {
+           
             p.m_iCategorySalesRows = (Integer) valcategorysales[0];
-            p.m_dCategorySalesTotalUnits = (Double) valcategorysales[1];
-            p.m_dCategorySalesTotal= (Double) valcategorysales[2];
+            p.m_dCategorySalesTotalUnits = (Double) valcategorysales[2];
+            p.m_dCategorySalesTotal= (Double) valcategorysales[3];
+            p.m_dAdvanceTotal = (Double) valcategorysales[1];
+           // p.adv = (Double) valcategorysales[1];
+           // p.adv+=p.adv;
+           
+           
         }
+       
 
         List categorys = new StaticSentence(app.getSession()
             , "SELECT a.NAME, sum(c.UNITS), sum(c.UNITS * (c.PRICE + (c.PRICE * d.RATE))) " +
@@ -173,12 +208,74 @@ public class PaymentsModel {
             p.m_lcategorysales = new ArrayList();
         } else {
             p.m_lcategorysales = categorys;
-        }        
+        }  
+        /*adding*/
+        Object[] valCashIn = (Object []) new StaticSentence(app.getSession()
+            , "SELECT SUM(PAYMENTS.TOTAL) " +
+              "FROM  PAYMENTS,RECEIPTS " +
+              "WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.PAYMENT = 'cashin'  AND RECEIPTS.MONEY = ?"+
+              "GROUP BY RECEIPTS.MONEY"     
+            , SerializerWriteString.INSTANCE
+            , new SerializerReadBasic(new Datas[] {Datas.DOUBLE}))
+            .find(app.getActiveCashIndex());
+              
+           
+            
+        if (valCashIn == null) {
+           // p.m_iPayments = new Integer(0);
+            //p.m_dPaymentsTotal = new Double(0.0);
+             p.payCashIn = new Double(0.0);
+             p.payCashIn = 0.0;
+        } else {
+            if(p.payCashIn == null){
+            
+             p.payCashIn = (Double) valCashIn[0];
+            // p.tempPrice = 0.0;
+            }else{
+            
+            p.payCashIn = (Double) valCashIn[0];
+            
+            }
+            // p.m_iPayments = (Integer) valtickets[0];
+            // p.m_dPaymentsTotal = (Double) valtickets[1];
+            // p.Temp = (Double) valtickets[2];
+        }
+         Object[] valCashOut = (Object []) new StaticSentence(app.getSession()
+            , "SELECT SUM(PAYMENTS.TOTAL) " +
+              "FROM  PAYMENTS,RECEIPTS " +
+              "WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.PAYMENT = 'cashout'  AND RECEIPTS.MONEY = ?"+
+              "GROUP BY RECEIPTS.MONEY"     
+            , SerializerWriteString.INSTANCE
+            , new SerializerReadBasic(new Datas[] {Datas.DOUBLE}))
+            .find(app.getActiveCashIndex());
+              
+           
+            
+        if (valCashOut == null) {
+           // p.m_iPayments = new Integer(0);
+            //p.m_dPaymentsTotal = new Double(0.0);
+             p.payCashOut = new Double(0.0);
+             p.payCashOut = 0.0;
+        } else {
+            if(p.payCashOut == null){
+            
+             p.payCashOut = (Double) valCashOut[0];
+            // p.tempPrice = 0.0;
+            }else{
+            
+            p.payCashOut = (Double) valCashOut[0];
+            
+            }
+            // p.m_iPayments = (Integer) valtickets[0];
+            // p.m_dPaymentsTotal = (Double) valtickets[1];
+            // p.Temp = (Double) valtickets[2];
+        }
+         /*adding*/
 // end
         
         // Pagos
         Object[] valtickets = (Object []) new StaticSentence(app.getSession()
-            , "SELECT COUNT(*), SUM(PAYMENTS.TOTAL) " +
+            , "SELECT COUNT(*), SUM(PAYMENTS.TOTAL)"+
               "FROM PAYMENTS, RECEIPTS " +
               "WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND RECEIPTS.MONEY = ?"
             , SerializerWriteString.INSTANCE
@@ -187,11 +284,112 @@ public class PaymentsModel {
             
         if (valtickets == null) {
             p.m_iPayments = new Integer(0);
-            p.m_dPaymentsTotal = new Double(0.0);
+           // p.m_dPaymentsTotal = new Double(0.0);
         } else {
-            p.m_iPayments = (Integer) valtickets[0];
-            p.m_dPaymentsTotal = (Double) valtickets[1];
-        }  
+            
+            
+             p.m_iPayments = (Integer) valtickets[0];
+            // p.m_dPaymentsTotal = (Double) valtickets[1];
+        }
+       // }
+         // if(p.m_dAdvanceTotal == null){
+           
+        
+            /*ADDING*/
+           // p.m_dPaymentsTotal  = p.m_dPaymentsTotal - p.m_dAdvanceTotal;
+           //  p.advTemp  = p.m_dPaymentsTotal - p.m_dAdvanceTotal;
+            /*  p.TempPay = p.m_dPaymentsTotal;
+            
+              p.advTemp  = p.m_dPaymentsTotal - p.m_dAdvanceTotal;
+              p.m_dPaymentsTotal = p.m_dPaymentsTotal -   p.advTemp;
+             
+             }else{
+              p.advTemp  = p.m_dPaymentsTotal - p.m_dAdvanceTotal;
+              p.m_dPaymentsTotal = p.m_dPaymentsTotal -   p.advTemp;
+              p.m_dPaymentsTotal = p.m_dPaymentsTotal +  p.TempPay; 
+                 
+                 
+             }*/
+               /*ADDING*/
+          Object[] valPrice = (Object []) new StaticSentence(app.getSession()
+            , "SELECT SUM(PAYMENTS.TOTAL) " +
+              "FROM  PAYMENTS,RECEIPTS " +
+              "WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.ADVANCE = 0.0 AND RECEIPTS.MONEY = ?"+
+              "GROUP BY RECEIPTS.MONEY"     
+            , SerializerWriteString.INSTANCE
+            , new SerializerReadBasic(new Datas[] {Datas.DOUBLE}))
+            .find(app.getActiveCashIndex());
+              
+           
+            
+        if (valPrice == null) {
+           // p.m_iPayments = new Integer(0);
+            //p.m_dPaymentsTotal = new Double(0.0);
+             p.tempPrice = new Double(0.0);
+             p.tempPrice = 0.0;
+        } else {
+            if(p.tempPrice == null){
+            
+             p.tempPrice = (Double) valPrice[0];
+            // p.tempPrice = 0.0;
+            }else{
+            
+            p.tempPrice = (Double) valPrice[0];
+            
+            }
+            // p.m_iPayments = (Integer) valtickets[0];
+            // p.m_dPaymentsTotal = (Double) valtickets[1];
+            // p.Temp = (Double) valtickets[2];
+        }
+        
+        /*ADDING*/
+       
+        
+        /*ADDING*/
+         // if(p.m_dAdvanceTotal ==0.0){
+           Object[] valAdvance = (Object []) new StaticSentence(app.getSession()
+            , "SELECT SUM(PAYMENTS.ADVANCE) " +
+              "FROM  PAYMENTS,RECEIPTS " +
+              "WHERE PAYMENTS.RECEIPT = RECEIPTS.ID AND PAYMENTS.ADVANCE > 0.0 AND RECEIPTS.MONEY = ?"+
+               "GROUP BY RECEIPTS.MONEY"
+            , SerializerWriteString.INSTANCE
+            , new SerializerReadBasic(new Datas[] {Datas.DOUBLE}))
+            .find(app.getActiveCashIndex());
+              
+           
+            
+        if (valAdvance == null) {
+           // p.m_iPayments = new Integer(0);
+            //p.m_dPaymentsTotal = new Double(0.0);
+           //  p.advTemp = new Double(0.0);
+              p.advTemp = 0.0;
+           //  p.advTemp = (Double) valAdvance[0];
+             p.tempPay = p.advTemp +  p.tempPrice;
+             p.m_dPaymentsTotal = p.tempPay +  p.payCashOut + p.payCashIn;
+             
+              
+        } else {
+            
+         
+            
+             p.advTemp = (Double) valAdvance[0];
+             p.tempPay = p.advTemp +  p.tempPrice;
+             p.m_dPaymentsTotal = p.tempPay +  p.payCashOut + p.payCashIn;
+             
+            // p.temp = p.tempPay;
+            // p.tempPay= p.advTemp +  p.tempPrice;
+           //  p.m_dPaymentsTotal =  p.tempPay;//p.advTemp +  p.tempPrice;
+            // p.temp = p.m_dPaymentsTotal;//p.tempPay;
+           
+        }
+       
+        
+         
+           
+            /*ADDING*/
+        
+        
+          
         
 // JG 16 Oct 13 - Added. Shaun Cains ADD REASON
         List l = new StaticSentence(app.getSession()            
@@ -207,7 +405,10 @@ public class PaymentsModel {
             p.m_lpayments = new ArrayList();
         } else {
             p.m_lpayments = l;
-        }        
+          
+           
+        } 
+        
         
         // Sales
         Object[] recsales = (Object []) new StaticSentence(app.getSession(),
@@ -275,22 +476,26 @@ public class PaymentsModel {
         // by janar153 @ 01.12.2013
         // Product Sales
         Object[] valproductsales = (Object []) new StaticSentence(app.getSession()
-            , "SELECT COUNT(*), SUM(TICKETLINES.UNITS), SUM((TICKETLINES.PRICE + TICKETLINES.PRICE * TAXES.RATE ) * TICKETLINES.UNITS) " +
+            , "SELECT COUNT(*),SUM(TICKETLINES.ADVANCE), SUM(TICKETLINES.UNITS), SUM((TICKETLINES.PRICE + TICKETLINES.PRICE * TAXES.RATE ) * TICKETLINES.UNITS) " +
               "FROM TICKETLINES, TICKETS, RECEIPTS, TAXES " +
               "WHERE TICKETLINES.TICKET = TICKETS.ID AND TICKETS.ID = RECEIPTS.ID AND TICKETLINES.TAXID = TAXES.ID AND TICKETLINES.PRODUCT IS NOT NULL AND RECEIPTS.MONEY = ? " +
               "GROUP BY RECEIPTS.MONEY"
             , SerializerWriteString.INSTANCE
-            , new SerializerReadBasic(new Datas[] {Datas.INT, Datas.DOUBLE, Datas.DOUBLE}))
+            , new SerializerReadBasic(new Datas[] {Datas.INT, Datas.DOUBLE, Datas.DOUBLE,Datas.DOUBLE}))
             .find(app.getActiveCashIndex());
  
         if (valproductsales == null) {
             p.m_iProductSalesRows = 0;
             p.m_dProductSalesTotalUnits = 0.0;
             p.m_dProductSalesTotal = 0.0;
+            p.m_dAdvanceTotal = 0.0;
         } else {
             p.m_iProductSalesRows = (Integer) valproductsales[0];
-            p.m_dProductSalesTotalUnits = (Double) valproductsales[1];
+            p.m_dProductSalesTotalUnits = (Double) valproductsales[3];
             p.m_dProductSalesTotal= (Double) valproductsales[2];
+            p.m_dAdvanceTotal = (Double) valproductsales[1];
+          
+            
         }
  
         List products = new StaticSentence(app.getSession()
@@ -592,6 +797,21 @@ public class PaymentsModel {
     public String printProductSalesTotal() {
         return Formats.CURRENCY.formatValue(m_dProductSalesTotal);
     }
+    
+    /*ADDING*/
+     public double getProductAdvanceTotal() {
+        return  m_dAdvanceTotal.doubleValue();//m_dProductSalesTotal.doubleValue();
+    }
+ 
+    /**
+     *
+     * @return
+     */
+    public String printProductAdvanceTotal() {
+        return Formats.CURRENCY.formatValue(m_dAdvanceTotal);
+    }
+    
+     /*ADDING*/
  
     /**
      *

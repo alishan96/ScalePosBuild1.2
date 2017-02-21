@@ -475,7 +475,7 @@ public class JPanelConfigDatabase extends javax.swing.JPanel implements PanelCon
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         try {
-            String URL = "http://www.itkamer.com";
+            String URL = "http://nexusleads.pk";
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(URL));
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage());

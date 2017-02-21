@@ -26,6 +26,7 @@ import com.openbravo.data.loader.SerializableRead;
 import com.openbravo.data.loader.SerializableWrite;
 import com.openbravo.format.Formats;
 import com.openbravo.pos.forms.AppLocal;
+import com.openbravo.pos.sales.JProductLineEdit;
 import com.openbravo.pos.util.StringUtils;
 import java.io.*;
 import java.util.Properties;
@@ -45,15 +46,39 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     private Properties attributes;
     private String productid;
     private String attsetinstid;
+    private String wCustomers;
+    private double advance;
+    private double recievableTotal;
+    private double recTotal;
+    private double TotalResult;
+    
+    public double getAdvance() {
+        return advance;
+    }
+
+    public void setAdvance(double advance) {
+        this.advance = advance;
+    }
+ 
+    public String getwCustomers() {
+        return wCustomers;
+    }
+
+    public void setwCustomers(String wCustomers) {
+        this.wCustomers = wCustomers;
+    }
+
+    
 
     /** Creates new TicketLineInfo
      * @param productid
      * @param dMultiply
      * @param dPrice
      * @param tax
-     * @param props */
+     * @param props
+     * @param wCustomers */
     public TicketLineInfo(String productid, double dMultiply, double dPrice, TaxInfo tax, Properties props) {
-        init(productid, null, dMultiply, dPrice, tax, props);
+        init(productid, null, dMultiply, dPrice, tax, props,wCustomers,advance,TotalResult);
     }
 
     /**
@@ -62,9 +87,10 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      * @param dMultiply
      * @param dPrice
      * @param tax
+     * @param wCustomers
      */
     public TicketLineInfo(String productid, double dMultiply, double dPrice, TaxInfo tax) {
-        init(productid, null, dMultiply, dPrice, tax, new Properties());
+        init(productid, null, dMultiply, dPrice, tax, new Properties(),wCustomers,advance,TotalResult);
     }
 
     /**
@@ -75,12 +101,13 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      * @param dMultiply
      * @param dPrice
      * @param tax
+     * @param wCustomers
      */
     public TicketLineInfo(String productid, String productname, String producttaxcategory, double dMultiply, double dPrice, TaxInfo tax) {
         Properties props = new Properties();
         props.setProperty("product.name", productname);
         props.setProperty("product.taxcategoryid", producttaxcategory);
-        init(productid, null, dMultiply, dPrice, tax, props);
+        init(productid, null, dMultiply, dPrice, tax, props,wCustomers,advance,TotalResult);
     }
 
     /**
@@ -90,20 +117,21 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      * @param dMultiply
      * @param dPrice
      * @param tax
+     * @param wCustomers
      */
     public TicketLineInfo(String productname, String producttaxcategory, double dMultiply, double dPrice, TaxInfo tax) {
 
         Properties props = new Properties();
         props.setProperty("product.name", productname);
         props.setProperty("product.taxcategoryid", producttaxcategory);
-        init(null, null, dMultiply, dPrice, tax, props);
+        init(null, null, dMultiply, dPrice, tax, props,wCustomers,advance,TotalResult);
     }
 
     /**
      *
      */
     public TicketLineInfo() {
-        init(null, null, 0.0, 0.0, null, new Properties());
+        init(null, null, 0.0, 0.0, null, new Properties(),null,0.0,0.0);
     }
 
     /**
@@ -146,9 +174,9 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
  
 //
 // Added JDL 25.05.13
-        attributes.setProperty("product.warranty", product.getWarranty()? "true" : "false");        
-//        
-        
+        attributes.setProperty("product.warranty", product.getWarranty()? "true" : "false");  
+       
+// 
             if (product.getAttributeSetID() != null) {
                 attributes.setProperty("product.attsetid", product.getAttributeSetID());
             }
@@ -157,7 +185,7 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
                 attributes.setProperty("product.categoryid", product.getCategoryID());
             }
         }
-        init(pid, null, dMultiply, dPrice, tax, attributes);
+        init(pid, null, dMultiply, dPrice, tax, attributes,wCustomers,advance,recievableTotal);
     }
 
     /**
@@ -176,10 +204,10 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      * @param line
      */
     public TicketLineInfo(TicketLineInfo line) {
-        init(line.productid, line.attsetinstid, line.multiply, line.price, line.tax, (Properties) line.attributes.clone());
+        init(line.productid, line.attsetinstid, line.multiply, line.price, line.tax, (Properties) line.attributes.clone(), line.wCustomers,line.advance,line.TotalResult);
     }
 
-    private void init(String productid, String attsetinstid, double dMultiply, double dPrice, TaxInfo tax, Properties attributes) {
+    private void init(String productid, String attsetinstid, double dMultiply, double dPrice, TaxInfo tax, Properties attributes , String wCustomers, double advance,double TotalResult) {
 
         this.productid = productid;
         this.attsetinstid = attsetinstid;
@@ -187,7 +215,11 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         price = dPrice;
         this.tax = tax;
         this.attributes = attributes;
+        this.wCustomers = wCustomers;
+        this.advance = advance;
+        this.TotalResult = TotalResult;
 
+        
         m_sTicket = null;
         m_iLine = -1;
     }
@@ -220,6 +252,9 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         } catch (IOException e) {
             dp.setBytes(8, null);
         }
+        dp.setString(9, wCustomers);
+        dp.setDouble(10, new Double(advance));
+        dp.setDouble(11, new Double(TotalResult));
     }
 
     /**
@@ -253,6 +288,10 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         } catch (IOException e) {
         }
     }
+  
+   
+   
+   
 
     /**
      *
@@ -345,6 +384,13 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      */
     public boolean isProductCom() {
         return "true".equals(attributes.getProperty("product.com"));
+    }
+    
+    public boolean isCustomerName() {
+        return "true".equals(printCustomer());
+    }
+     public String printCustomer() {
+        return StringUtils.encodeXML(getwCustomers());
     }
 
     /**
@@ -502,6 +548,13 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     public double getValue() {
         return price * multiply * (1.0 + getTaxRate());
     }
+    
+     public double getRecievablValue() {
+        double result = (price * multiply * (1.0 + getTaxRate()));
+        TotalResult = result - advance;
+        return TotalResult;
+    }
+   
 
     /**
      *
@@ -527,6 +580,7 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         return Formats.CURRENCY.formatValue(getPrice());
     }
 
+   
     /**
      *
      * @return
@@ -565,7 +619,20 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
      */
     public String printValue() {
         return Formats.CURRENCY.formatValue(getValue());
+        
     }
+    
+    public String printRecievableTotal(){
+    
+    return Formats.CURRENCY.formatValue(getRecievablValue());
+    }
+    
+      public String printAdvance(){
+    
+    return Formats.CURRENCY.formatValue(getAdvance());
+    }
+    
+    
 // ADDED JG 20.12.10 - Kitchen Print
 
     /**
@@ -632,6 +699,10 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
 //
 
 }
+
+    public void setProperty(String text) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 
 }

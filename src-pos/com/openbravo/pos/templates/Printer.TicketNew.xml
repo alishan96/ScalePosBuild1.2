@@ -26,20 +26,20 @@
             <text align="right" length="10">${ticket.printTotal()}</text>
         </line>
         <line>
-            <text align="center" length="20">Thank you for your custom</text>
+            <text align="center" length="30">Thank you for your custom</text>
         </line>
     </display>
     <ticket>
         <image>Printer.Ticket.Logo</image>
         <line></line>
         <line>
-            <text align="center" length="42">Wanda POS</text>
+            <text align="center" length="42">Sky Visions</text>
         </line>
         <line>
-            <text align="center" length="42">Touch Friendly Point Of Sale</text>
+            <text align="center" length="42">Nexus Leads</text>
         </line>
         <line>
-            <text align="center" length="42">Copyright (c) 2014-2015 Wanda POS</text>
+            <text align="center" length="42">Copyright (c) 2015-2016 Scale POS</text>
         </line>
         <line>
             <text align="center" length="42">Printer.TicketNew</text>

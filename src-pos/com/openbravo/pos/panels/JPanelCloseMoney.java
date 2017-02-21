@@ -34,6 +34,7 @@ import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,11 +42,20 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+import org.smslib.GatewayException;
+import org.smslib.OutboundMessage;
+import org.smslib.Service;
+import org.smslib.TimeoutException;
 // import org.joda.time.format.DateTimeFormat;
 // import org.joda.time.format.DateTimeFormatter;
 
@@ -58,22 +68,39 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
     
     private AppView m_App;
     private DataLogicSystem m_dlSystem;
+     //ticketId added by Ghous
+    private String ticketId;
+    private String ticketLineId;
+    
     
     private PaymentsModel m_PaymentsToClose = null;   
     
     private TicketParser m_TTP;
-    private DateFormat df= new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");   
-    
+    private DateFormat df= new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+     private static final String port = "COM5"; //Modem Port.
+    private static final  int bitRate = 115200; //this is also optional. leave as it is.
+    private static final String modemName = "Qualcomm"; //this is optional.
+    private static  final String modemPin = "0000"; //Pin code if any have assigned to the modem.
+    private static final String SMSC = "+923455000010"; //Message Center Number e
+   private  GsmModem gsm;
     private Session s;
     private Connection con;  
     private Statement stmt;
     private Integer result;
     private String SQL;
-    private ResultSet rs;    
-    
+    private ResultSet rs;   
+   private  ResultSet rs2;
+    private OutboundMessage msg;
+   
+    private       ArrayList<Ticket> ticketList = new  ArrayList<>();
+     private        Ticket ticket = new Ticket();
+    private     Product product = new Product();
+   private   Ticket ticket2 = new Ticket();
+   private    ArrayList<Ticket> ticketList2 = new ArrayList<>();
+     private      ArrayList<Product> productList = new ArrayList<>();
     /** Creates new form JPanelCloseMoney */
     public JPanelCloseMoney() {
-        
+    
         initComponents();                   
     }
     
@@ -167,6 +194,10 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
     private void loadData() throws BasicException {
         
         // Reset
+        
+          //  GsmModem gsm = new GsmModem();
+            
+      
         m_jSequence.setText(null);
         m_jMinDate.setText(null);
         m_jMaxDate.setText(null);
@@ -179,6 +210,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         
         m_jCount.setText(null); // AppLocal.getIntString("label.noticketstoclose");
         m_jCash.setText(null);
+        m_jAdvance.setText(null);
 
         m_jSales.setText(null);
         m_jSalesSubtotal.setText(null);
@@ -211,6 +243,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
             m_jSalesSubtotal.setText(m_PaymentsToClose.printSalesBase());
             m_jSalesTaxes.setText(m_PaymentsToClose.printSalesTaxes());
             m_jSalesTotal.setText(m_PaymentsToClose.printSalesTotal());
+            m_jAdvance.setText(m_PaymentsToClose.printProductAdvanceTotal());
         }          
         
         m_jTicketTable.setModel(m_PaymentsToClose.getPaymentsModel());
@@ -326,12 +359,18 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         jLabel8 = new javax.swing.JLabel();
         m_jNoCashSales = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
+        jLabel9 = new javax.swing.JLabel();
+        m_jAdvance = new javax.swing.JTextField();
         jPanelTop = new javax.swing.JPanel();
         m_jCloseCashTop = new javax.swing.JButton();
         m_jPrintCashTop = new javax.swing.JButton();
         jPanelBottom = new javax.swing.JPanel();
         m_jCloseCash = new javax.swing.JButton();
         m_jPrintCash = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
+        jButton2 = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -468,7 +507,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         jLabel12.setText(AppLocal.getIntString("label.taxcash")); // NOI18N
 
         jLabel7.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel7.setText(AppLocal.getIntString("label.totalcash")); // NOI18N
+        jLabel7.setText(AppLocal.getIntString("label.totalsales")); // NOI18N
 
         m_jSalesTotal.setEditable(false);
         m_jSalesTotal.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
@@ -484,6 +523,13 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         m_jNoCashSales.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         m_jNoCashSales.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
 
+        jLabel9.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabel9.setText(bundle.getString("label.advance")); // NOI18N
+
+        m_jAdvance.setEditable(false);
+        m_jAdvance.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        m_jAdvance.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -497,14 +543,14 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(m_jCount)
@@ -516,16 +562,20 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(m_jNoCashSales, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(m_jAdvance, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(m_jScrollSales, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(m_jScrollTableTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 14, Short.MAX_VALUE))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(m_jScrollSales, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(m_jScrollTableTicket, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -548,15 +598,19 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                     .addComponent(m_jSalesTaxes, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(m_jSalesTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(m_jAdvance, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(m_jSalesTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1, 1, 1)
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(m_jNoCashSales, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jPanelTop.setEnabled(false);
@@ -656,6 +710,24 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                 .addComponent(m_jPrintCash, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
+        jButton1.setText("Send");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jTextArea2.setColumns(20);
+        jTextArea2.setRows(5);
+        jScrollPane2.setViewportView(jTextArea2);
+
+        jButton2.setText("Get");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -663,22 +735,41 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanelTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jPanelTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(26, 26, 26)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButton1)
+                                    .addComponent(jButton2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 4, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(jPanelTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanelTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton2)
+                        .addGap(16, 16, 16)))
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(1, 1, 1)
                 .addComponent(jPanelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -698,32 +789,68 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         if (res == JOptionPane.YES_OPTION) {
 
             Date dNow = new Date();
+/*ADDING*/
+
+ //try {
+                // Cerramos la caja si esta pendiente de cerrar.
+             /*  if (m_App.getActiveCashDateEnd() == null) {
+                    new StaticSentence(m_App.getSession()
+                               , "UPDATE CASHVALUE SET DATEEND = ? WHERE MONEY = ?"
+                       /* , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"*/
+                     // , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"
+                     //   , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.STRING}))
+                  //  .exec(new Object[] {dNow,  m_App.getActiveCashIndex()});
+               // }
+          //  } catch (BasicException e) {
+               // MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
+              //  msg.show(this);
+        //    }
 
             try {
                 // Cerramos la caja si esta pendiente de cerrar.
                 if (m_App.getActiveCashDateEnd() == null) {
                     new StaticSentence(m_App.getSession()
-                        , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"
-                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.INT, Datas.STRING, Datas.STRING}))
-                    .exec(new Object[] {dNow, result, m_App.getProperties().getHost(), m_App.getActiveCashIndex()});
+                        , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ?, CLDCASH = ? WHERE HOST = ? AND MONEY = ?"
+                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.INT, Datas.DOUBLE, Datas.STRING, Datas.STRING}))
+                    .exec(new Object[] {dNow, result,m_PaymentsToClose.getTotal(),  m_App.getProperties().getHost(), m_App.getActiveCashIndex()});
                 }
             } catch (BasicException e) {
                 MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
                 msg.show(this);
             }
-
+            
+            
+//try {
+                // Cerramos la caja si esta pendiente de cerrar.
+            //  if (m_App.getActiveCashDateEnd() == null) {
+                 //   new StaticSentence(m_App.getSession()
+                              /* , "UPDATE CASHVALUE SET DATEEND = ? WHERE MONEY = ?"*/
+                       /* , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"*/
+                   /*   , "UPDATE CASHVALUE SET DATEEND = ?, CASH = ?  WHERE MONEY = ?"
+                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.DOUBLE, Datas.STRING}))
+                    .exec(new Object[] {dNow, m_PaymentsToClose.getTotal(), m_App.getActiveCashIndex()});
+                }
+            } catch (BasicException e) {
+                MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
+                msg.show(this);
+            }*/
+              /*ADDING*/
             try {
                 // Creamos una nueva caja
                 m_App.setActiveCash(UUID.randomUUID().toString(), m_App.getActiveCashSequence() + 1, dNow, null);
 
                 // creamos la caja activa
                 m_dlSystem.execInsertCash(
-                    new Object[] {m_App.getActiveCashIndex(), m_App.getProperties().getHost(), m_App.getActiveCashSequence(), m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd(),0});
+                    new Object[] {m_App.getActiveCashIndex(),  m_App.getProperties().getHost(), m_App.getActiveCashSequence(), m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd(),0});
 
                 m_dlSystem.execDrawerOpened(
                     new Object[] {m_App.getAppUserView().getUser().getName(),"Close Cash"});
 
                 // ponemos la fecha de fin
+              /*  m_dlSystem.execInsertCashvalue(
+                    new Object[] {m_App.getActiveCashIndex(),  m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd()});
+*/
+                
                 m_PaymentsToClose.setDateEnd(dNow);
 
                 // print report
@@ -752,25 +879,63 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         if (res == JOptionPane.YES_OPTION) {
 
             Date dNow = new Date();
+/*adding*/
 
+//try {
+                // Cerramos la caja si esta pendiente de cerrar.
+              // if (m_App.getActiveCashDateEnd() == null) {
+                  //  new StaticSentence(m_App.getSession()
+                        //       , "UPDATE CASHVALUE SET DATEEND = ? WHERE MONEY = ?"
+                       /* , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"*/
+                     // , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"
+                    //    , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.STRING}))
+                   // .exec(new Object[] {dNow,  m_App.getActiveCashIndex()});
+              //  }
+          //  } catch (BasicException e) {
+              //  MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
+            //    msg.show(this);
+          //  }
             try {
                 // Cerramos la caja si esta pendiente de cerrar.
-                if (m_App.getActiveCashDateEnd() == null) {
+              if (m_App.getActiveCashDateEnd() == null) {
                     new StaticSentence(m_App.getSession()
-                        , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"
-                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.INT, Datas.STRING, Datas.STRING}))
-                    .exec(new Object[] {dNow, result, m_App.getProperties().getHost(), m_App.getActiveCashIndex()});
+                              /* , "UPDATE CASHVALUE SET DATEEND = ? WHERE MONEY = ?"*/
+                       /* , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"*/
+                      , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ?, CLDCASH = ? WHERE HOST = ? AND MONEY = ?"
+                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.INT, Datas.DOUBLE, Datas.STRING, Datas.STRING}))
+                    .exec(new Object[] {dNow, result, m_PaymentsToClose.getTotal(), m_App.getProperties().getHost(), m_App.getActiveCashIndex()});
                 }
             } catch (BasicException e) {
                 MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
                 msg.show(this);
             }
-
+            
+        /*     try {
+                // Cerramos la caja si esta pendiente de cerrar.
+              if (m_App.getActiveCashDateEnd() == null) {
+                    new StaticSentence(m_App.getSession()*/
+                              /* , "UPDATE CASHVALUE SET DATEEND = ? WHERE MONEY = ?"*/
+                       /* , "UPDATE CLOSEDCASH SET DATEEND = ?, NOSALES = ? WHERE HOST = ? AND MONEY = ?"*/
+                  /*    , "UPDATE CASHVALUE SET DATEEND = ?  WHERE MONEY = ?"
+                        , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.STRING}))
+                    .exec(new Object[] {dNow,  m_App.getActiveCashIndex()});
+                }
+            } catch (BasicException e) {
+                MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, AppLocal.getIntString("message.cannotclosecash"), e);
+                msg.show(this);
+            }
+                       */
+/*adding*/
             try {
                 // Creamos una nueva caja
                 m_App.setActiveCash(UUID.randomUUID().toString(), m_App.getActiveCashSequence() + 1, dNow, null);
 
                 // creamos la caja activa
+               /* m_dlSystem.execInsertCash(
+                    new Object[] {m_App.getActiveCashIndex(), m_App.getProperties().getHost(), m_App.getActiveCashSequence(),0});
+*/
+              
+               
                 m_dlSystem.execInsertCash(
                     new Object[] {m_App.getActiveCashIndex(), m_App.getProperties().getHost(), m_App.getActiveCashSequence(), m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd(),0});
 
@@ -778,8 +943,16 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                     new Object[] {m_App.getAppUserView().getUser().getName(),"Close Cash"});
 
                 // ponemos la fecha de fin
-                m_PaymentsToClose.setDateEnd(dNow);
+                
+              //  m_dlSystem.execInsertCashvalue(
+                   // new Object[] {m_App.getActiveCashIndex(), m_PaymentsToClose.getTotal(),  m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd()});
 
+                   /* m_dlSystem.execInsertCashvalue(
+                    new Object[] {m_App.getActiveCashIndex(), 0.0,  m_App.getActiveCashDateStart(), m_App.getActiveCashDateEnd()});
+*/
+                m_PaymentsToClose.setDateEnd(dNow);
+                
+                
                 // print report
                 printPayments("Printer.CloseCash");
 
@@ -805,10 +978,200 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         printPayments("Printer.PartialCash");
 
     }//GEN-LAST:event_m_jPrintCashActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+ // TODO add your handling code here:
+        
+        //ticket selection logic goes ehre
+        //SMS
+        //ArrayList<String> testList = new ArrayList<>();
+        
+          try{
+         
+                //   Vector <Ticket> vec = new Vector();
+               //   Ticket tickArray[];
+         //     tickArray = new Ticket[100];
+           //       tickArray[0].setPrice("2");
+           float totalPrice = 0; 
+           s=m_App.getSession();
+            con=s.getConnection();  
+             String message = new String();
+            String customerNo=jTextArea2.getText();
+         //   String sdbmanager = m_dlSystem.getDBVersion();           
+          //  if (("Derby".equals(sdbmanager)) || ("Apache Derby".equals(sdbmanager))){  
+                //SELECT * FROM scalepos.tickets ORDER BY TICKETID DESC
+           //   SQL = "SELECT * FROM TICKETS ORDER BY TICKETID DESC";                                  
+           // } else {  
+           System.out.println("The customer no is:"+customerNo);
+               SQL="SELECT * FROM TICKETS ORDER BY TICKETID DESC";        
+            //}
+            stmt = (Statement) con.createStatement();  
+            stmt.setMaxRows(1);
+            rs = stmt.executeQuery(SQL);
+            //PreparedStatement statement = connection.prepareStatement(yourQuery); 
+            //statement.setMaxRows(1);
+            while (rs.next()){
+                ticketLineId= rs.getString(1);
+                ticketId=rs.getString(3);
+                System.out.println("ticketLine ID is:"+ticketLineId);
+                System.out.println("ticketId is:"+ticketId);
+            }
+            rs=null;
+            
+            
+            /*ADDING*/
+          /*  System.out.println("The customer no is:"+customerNo);
+               SQL="SELECT ADVANCE,TOTALRECIEVABLE FROM TICKETLINES";        
+            //}
+            stmt = (Statement) con.createStatement();  
+            stmt.setMaxRows(1);
+            rs = stmt.executeQuery(SQL);
+            //PreparedStatement statement = connection.prepareStatement(yourQuery); 
+            //statement.setMaxRows(1);
+            while (rs.next()){
+                double a = rs.getDouble(1);
+                double b = rs.getDouble(2);
+                System.out.println("advance is:"+a);
+                System.out.println("totalreceivable is:"+b);
+               // ticketLineId= rs.getString(1);
+               // ticketId=rs.getString(3);
+              //  System.out.println("ticketLine ID is:"+ticketLineId);
+               // System.out.println("ticketId is:"+ticketId);
+            }
+            rs=null;*/
+             /*ADDING*/
+            //con=null;
+            //s=null;
+            //List<DisplayAllStudentInfoBean> list = new ArrayList<DisplayAllStudentInfoBean>();
+      
+              // SQL="= 'No Sale' AND OPENDATE > " + "'" + ticketLineId+ "'"; 
+            SQL="SELECT * FROM TICKETLINES WHERE TICKET="+ "'" + ticketLineId+ "'";
+            stmt = (Statement) con.createStatement(); 
+             rs = stmt.executeQuery(SQL);
+             int loop = 0;
+             int itemNo = 1;
+              while (rs.next()){
+             //   ticketLineId= rs.getString(1);
+               // ticketId=rs.getString(3);
+                //System.out.println("ticketLine ID is:"+ticketLineId);
+                //8
+                 
+               ticket.setUnits(rs.getString(5));
+              //   testList.set(0,rs.getString(5));
+                ticket.setPrice(rs.getString(6));
+              //  testList.set(0,rs.getString(5));
+                ticket.setProductId(rs.getString(3));
+                //ticket
+                System.out.println("6th line to print:"+rs.getString(6));
+                System.out.println("The product id is:"+rs.getString(3));
+                ticketList.add(ticket);
+              
+           //     vec.add(ticket);
+         //       tickArray[loop].setProductId(rs.getString(3));
+           //     tickArray[loop].setUnits(rs.getString(5));
+             //   tickArray[loop].setPrice(rs.getString(6));
+                
+                System.out.println("The ticket inside ticket price: "+ticketList.get(loop).getPrice());
+                System.out.println("The ticket inside ticket prduct id : "+ticketList.get(loop).getProductId());
+                message+=" Item "+(itemNo)+" price is "+ticketList.get(loop).getPrice()+
+                " and quantity is: "+ticketList.get(loop).getUnits()+" ";
+                totalPrice += Float.parseFloat(ticketList.get(loop).getPrice());
+                  loop++;
+                  itemNo++;
+              }
+                          //rs=null;
+
+           /*
+              for (int k11=0; k11<ticketList.size();k11++){
+              rs2=null;
+              System.out.println("inside adding prudcut id The ticket product id is: "+ticketList.get(k11).getProductId());
+              SQL="SELECT NAME FROM PRODUCTS WHERE ID="+ "'" + ticketList.get(k11).getProductId()+ "'";
+              //ticket2
+              //ticketList2
+              stmt = (Statement) con.createStatement(); 
+             rs2 = stmt.executeQuery(SQL);
+              while (rs2.next()){
+             //   ticketLineId= rs.getString(1);
+               // ticketId=rs.getString(3);
+                //System.out.println("ticketLine ID is:"+ticketLineId);
+                //8
+//            testList.set(k11, rs.getString(1));
+              ticket2.setProductId(rs2.getString(1));
+              System.out.println("The product name is"+rs2.getString(1));
+                
+                ticketList2.add(ticket2);
+             //    rs= null;
+              }
+              rs2=null;
+                      //     rs= null; 
+
+              }//till heere*/
+              // rs= null;
+              // System.out.println("Initial elements in the vector :- "); 
+  // for (Ticket tick : vec) {         
+   //System.out.println("price of vector = " + tick.getPrice());
+   //}
+            //  String setVal = " "; 
+                   
+                 //   int n=-1;
+            //  for( int i = 0; i <ticketList.size(); i++){
+            //  System.out.println("size of ticket list is: "+ticketList.size()+
+                   //   "The size of product list is: "+productList.size());
+      
+             //   message.concat("The price is "+ticketList.get(i).getPrice()+" ticket unit is: "+ticketList.get(i).getUnits()
+               //       +"The product is:"+productList.get(i).getName());
+//System.out.println("The value of tick array is"+tickArray[i].getPrice());
+ //}
+                 message += "total is : "+totalPrice;          
+ System.out.println("The message is: "+message);
+ message+=" Message by Sky Vision Marbles";
+ //System.out.println("The set val: "+setVal);
+  //ArrayList<String
+            try {
+           //Wahab/Owner no 03059111375
+                  msg = new OutboundMessage(customerNo, message);
+                Service.getInstance().sendMessage(msg);
+                
+                  msg = new OutboundMessage ("03059111375", message);
+                  Service.getInstance().sendMessage(msg);
+                  
+              } catch (TimeoutException | GatewayException | IOException | InterruptedException ex) {
+                  Logger.getLogger(JPanelCloseMoney.class.getName()).log(Level.SEVERE, null, ex);
+             }
+    JOptionPane.showMessageDialog(this, "Message send", "Send Customer", JOptionPane.INFORMATION_MESSAGE);
+
+   System.out.println("Message sent");
+   
+                  rs=null;
+                  
+                  msg=null;
+                  
+            }  
+          catch(java.lang.NullPointerException ex){
+          System.out.println("error ="+ex);
+          }
+        catch (SQLException e){System.out.println("error = " + e);}     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+
+            gsm = new GsmModem();
+        gsm.configModem(port, bitRate, modemName, modemPin, SMSC);
+        
+              try {
+                  
+                  gsm.doIt();
+                 // x++;
+                
+              } catch (Exception ex) {
+                  Logger.getLogger(JPanelCloseMoney.class.getName()).log(Level.SEVERE, null, ex);
+              }
+    }//GEN-LAST:event_jButton2ActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.Box.Filler filler1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -819,12 +1182,16 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanelBottom;
     private javax.swing.JPanel jPanelTop;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JTextField m_jAdvance;
     private javax.swing.JTextField m_jCash;
     private javax.swing.JButton m_jCloseCash;
     private javax.swing.JButton m_jCloseCashTop;

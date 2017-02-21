@@ -1,3 +1,4 @@
+
 //    Wanda POS  - Africa's Gift to the World
 //    Copyright (c) 2014-2015 IT-Kamer & previous Unicenta POS and Openbravo POS works
 //    www.erp-university-africa.com
@@ -50,6 +51,7 @@ import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.InactivityListener;
 import com.openbravo.pos.util.JRPrinterAWT300;
 import com.openbravo.pos.util.ReportUtils;
+import com.openbravo.pos.walkingcustomers.WalkingCustomers;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -72,6 +74,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+
 
 /**
  *
@@ -132,6 +135,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
      *
      */
     protected JPanelButtons m_jbtnconfig;
+    protected WalkingCustomers wCutomers;
     
     /**
      *
@@ -141,12 +145,16 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     /**
      *
      */
+    
     protected DataLogicSystem dlSystem;
 
+    
     /**
      *
      */
+    
     protected DataLogicSales dlSales;
+    
 
     /**
      *
@@ -166,7 +174,9 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     private InactivityListener listener;
     private Integer delay = 0;
     private String m_sCurrentTicket = null;
+    private String wCustomers = null;
 
+           
     /**
      *
      */
@@ -199,7 +209,10 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     @Override
     public void init(AppView app) throws BeanFactoryException {
        
-        m_App = app;
+        
+       
+         m_App = app;
+        
         restDB = new  RestaurantDBUtils(m_App);
        
         dlSystem = (DataLogicSystem) m_App.getBean("com.openbravo.pos.forms.DataLogicSystem");
@@ -619,7 +632,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
      */
     protected void addTicketLine(TicketLineInfo oLine) {  
         if (executeEventAndRefresh("ticket.addline", new ScriptArg("line", oLine)) == null) {        
-            if (oLine.isProductCom()) {
+            if (oLine.isProductCom() || oLine.isCustomerName()) {
                 // Comentario entonces donde se pueda
                 int i = m_ticketlines.getSelectedIndex();
                 // me salto el primer producto normal...
@@ -750,6 +763,19 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             return 0.0;
         }
     }
+   /* private String getwCustomers(){
+    
+     try {
+           // Double ret = Double.parseDouble(m_jPrice.getText());
+           // return priceWith00 ? ret / 100 : ret;
+            return m_jPrice.getText();
+        } catch (NumberFormatException e){
+            return null;
+        }
+    */
+    
+    
+    //}
 
     private double getPorValue() {
         try {
@@ -2111,7 +2137,7 @@ if (pickupSize!=null && (Integer.parseInt(pickupSize) >= tmpPickupId.length())){
         m_jLblTotalEuros2.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         m_jLblTotalEuros2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         m_jLblTotalEuros2.setLabelFor(m_jSubtotalEuros);
-        m_jLblTotalEuros2.setText(AppLocal.getIntString("label.taxcash")); // NOI18N
+        m_jLblTotalEuros2.setText(AppLocal.getIntString("label.taxes")); // NOI18N
         m_jPanTotals.add(m_jLblTotalEuros2);
 
         m_jLblTotalEuros1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
@@ -2295,12 +2321,14 @@ if (pickupSize!=null && (Integer.parseInt(pickupSize) >= tmpPickupId.length())){
     }//GEN-LAST:event_m_jbtnScaleActionPerformed
 
     private void m_jEditLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jEditLineActionPerformed
+
         int i = m_ticketlines.getSelectedIndex();
         if (i < 0){
             Toolkit.getDefaultToolkit().beep(); // no line selected
         } else {
             try {
                 TicketLineInfo newline = JProductLineEdit.showMessage(this, m_App, m_oTicket.getLine(i));
+               
                 if (newline != null) {
                     // line has been modified
                     paintTicketLine(i, newline);

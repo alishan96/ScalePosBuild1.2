@@ -28,7 +28,10 @@ import com.openbravo.pos.forms.AppConfig;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.payment.PaymentInfo;
 import com.openbravo.pos.payment.PaymentInfoMagcard;
+import com.openbravo.pos.sales.JProductLineEdit;
 import com.openbravo.pos.util.StringUtils;
+import com.openbravo.pos.walkingcustomers.WalkingCustomers;
+import com.openbravo.pos.walkingcustomers.walkingCustomersInfo;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,6 +41,7 @@ import java.util.*;
  *
  * @author adrianromero
  */
+
 public class TicketInfo implements SerializableRead, Externalizable {
 
     private static final long serialVersionUID = 2765650092387265178L;
@@ -79,7 +83,20 @@ public class TicketInfo implements SerializableRead, Externalizable {
     private final String m_sResponse;
     private String loyaltyCardNumber;
     private Boolean oldTicket;
+    private TicketLineInfo wCustomers;
+    private String wCust;
 
+   public String getwCustomersval() {
+        
+        return wCust;
+     // return wCustomers.getwCustomers();
+ }
+    
+    
+    
+   
+
+   
     
     /** Creates new TicketModel */
     public TicketInfo() {
@@ -97,6 +114,7 @@ public class TicketInfo implements SerializableRead, Externalizable {
         taxes = null;
         m_sResponse = null;
         oldTicket=false;
+    //  wCust =  wCustomers.getwCustomers();
         
     }
 
@@ -110,6 +128,7 @@ public class TicketInfo implements SerializableRead, Externalizable {
         out.writeObject(m_dDate);
         out.writeObject(attributes);
         out.writeObject(m_aLines);
+        out.writeObject(wCustomers);
     }
 
     @Override
@@ -127,7 +146,7 @@ public class TicketInfo implements SerializableRead, Externalizable {
 
         payments = new ArrayList<>(); // JG June 2102 diamond inference
         taxes = null;
-      
+     //   wCustomers = (WalkingCustomers) in.readObject();
     }
 
     /**
@@ -155,7 +174,7 @@ public class TicketInfo implements SerializableRead, Externalizable {
 
         payments = new ArrayList<>(); // JG June 2102 diamond inference
         taxes = null;
-        
+       // wCustomers = new WalkingCustomers(dr.getString(10));
     }
 
     /**
@@ -312,6 +331,8 @@ public class TicketInfo implements SerializableRead, Externalizable {
     public void setUser(UserInfo value) {
         m_User = value;
     }
+    
+    
 
     /**
      *
@@ -500,6 +521,23 @@ public class TicketInfo implements SerializableRead, Externalizable {
         double sum = 0.0;
         for (TicketLineInfo line : m_aLines) {
             sum += line.getSubValue();
+        }
+        return sum;
+    }
+    public double getReceivableTotal() {
+        double sum = 0.0;
+        for (TicketLineInfo line : m_aLines) {
+            sum += line.getSubValue() - line.getAdvance();
+        }
+        return sum;
+    }
+    
+    
+    
+    public double getAdvance() {
+        double sum = 0.0;
+        for (TicketLineInfo line : m_aLines) {
+            sum += line.getAdvance();
         }
         return sum;
     }
@@ -764,7 +802,14 @@ public class TicketInfo implements SerializableRead, Externalizable {
     public String printSubTotal() {
         return Formats.CURRENCY.formatValue(getSubTotal());
     }
+    
+    public String printReceivableTotal() {
+        return Formats.CURRENCY.formatValue(getReceivableTotal());
+    }
 
+     public String printAdvance() {
+        return Formats.CURRENCY.formatValue(getAdvance());
+    }
     /**
      *
      * @return

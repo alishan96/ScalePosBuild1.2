@@ -1,0 +1,41 @@
+//Added later by Mghkhan Nexus leads Consultants
+
+
+report = new com.openbravo.pos.reports.PanelReportBean();
+
+report.setTitleKey("Menu.InventoryValue");
+report.setReport("/com/openbravo/reports/inventorybyvalue");
+report.setResourceBundle("com/openbravo/reports/inventoryvalue_messages");
+
+//label.title=Inventory: Value by Type Product(Item)
+//label.printed=Printed
+//label.ref=Ref.
+//label.name=Name
+
+//label.units=Units
+//label.valuebuy=Unit Cost
+
+//label.valuecost=Value
+
+
+report.setSentence("SELECT " +
+                
+                "PRODUCTS.REFERENCE, " +
+                "PRODUCTS.NAME AS PRODUCTNAME, " +
+                "PRODUCTS.CATEGORY, " +
+                "CATEGORIES.NAME AS CATEGORYNAME, " +
+                "SUM(STOCKCURRENT.UNITS) AS UNITS, " +
+               
+                "PRODUCTS.PRICESELL, " +
+                "COALESCE(PRODUCTS.STOCKVOLUME, 0) AS STOCKVOLUME, " +
+                "COALESCE(PRODUCTS.STOCKCOST, 0) AS STOCKCOST, " +
+                "COALESCE(STOCKLEVEL.STOCKSECURITY, 0) AS STOCKSECURITY, " +
+                "COALESCE(STOCKLEVEL.STOCKMAXIMUM, 0) AS STOCKMAXIMUM " +
+                "FROM STOCKCURRENT " +
+                "JOIN LOCATIONS ON STOCKCURRENT.LOCATION = LOCATIONS.ID " +
+                "JOIN PRODUCTS ON STOCKCURRENT.PRODUCT = PRODUCTS.ID " +
+                "JOIN CATEGORIES ON PRODUCTS.CATEGORY = CATEGORIES.ID " +
+                "LEFT OUTER JOIN STOCKLEVEL ON STOCKCURRENT.LOCATION = STOCKLEVEL.LOCATION AND STOCKCURRENT.PRODUCT = STOCKLEVEL.PRODUCT " +
+                "WHERE ?(QBF_FILTER) " +
+                "GROUP BY STOCKCURRENT.LOCATION, LOCATIONS.NAME, PRODUCTS.REFERENCE, PRODUCTS.NAME, PRODUCTS.CATEGORY, CATEGORIES.NAME, PRODUCTS.PRICEBUY, PRODUCTS.PRICESELL, PRODUCTS.STOCKVOLUME, PRODUCTS.STOCKCOST, STOCKLEVEL.STOCKSECURITY, STOCKLEVEL.STOCKMAXIMUM " +
+                "ORDER BY STOCKCURRENT.LOCATION, CATEGORIES.NAME, PRODUCTS.NAME");

@@ -105,7 +105,10 @@ public class JTicketsBagSharedList extends javax.swing.JDialog {
             setFocusPainted(false);
             setFocusable(false);
             setRequestFocusEnabled(false);
-            setMargin(new Insets(8, 14, 8, 14));
+            
+            //setMargin(new Insets(8, 14, 8, 14));
+
+            setMargin(new Insets(9, 16, 9, 16));
             setFont(new java.awt.Font ("Dialog", 1, 16));
             setBackground(new java.awt.Color (220, 220, 220));
             addActionListener(new ActionListenerImpl());

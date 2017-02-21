@@ -80,10 +80,11 @@ public class PaymentInfoCash extends PaymentInfo {
      * @return
      */
     @Override
+    /*adding*/
     public String getName() {
-        return "cash";
+        return "TotalSales";
     }
-
+ /*adding*/
     /**
      *
      * @return

@@ -626,7 +626,7 @@ public class JPaneldbMigrate extends JPanel implements JPanelView {
                     }
 
 // copy closedcash  table       
-                    SQL = "SELECT * FROM CLOSEDCASH";
+       /*             SQL = "SELECT * FROM CLOSEDCASH";
                     rs = stmt.executeQuery(SQL);
                     while (rs.next()) {
                         SQL = "INSERT INTO CLOSEDCASH(MONEY, HOST, HOSTSEQUENCE, DATESTART, DATEEND ) VALUES (?, ?, ?, ?, ?)";
@@ -639,7 +639,7 @@ public class JPaneldbMigrate extends JPanel implements JPanelView {
                         pstmt.executeUpdate();
                     }
 
-
+*/
 
 // copy csvimport  table       
                     SQL = "SELECT * FROM CSVIMPORT";

@@ -225,6 +225,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
 
     private void printTicket(String resname, TicketInfo ticket, CustomerInfoExt customer) {
 
+       System.out.println("ticket Id:"+ticket.getId());
         String resource = dlsystem.getResourceAsXML(resname);
         if (resource == null) {
             MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotprintticket"));

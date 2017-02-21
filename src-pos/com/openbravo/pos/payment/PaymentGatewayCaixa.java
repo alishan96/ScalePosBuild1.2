@@ -66,8 +66,13 @@ public class PaymentGatewayCaixa implements PaymentGateway {
         this.m_bTestMode = Boolean.valueOf(props.getProperty("payment.testmode")).booleanValue();
         
         //EUR, USD, GPB
+        //adding PKR 
+        //            ? Currency.getInstance("EUR").getCurrencyCode()
+
         this.m_sCurrency = (Locale.getDefault().getCountry().isEmpty())
-            ? Currency.getInstance("EUR").getCurrencyCode()
+                //            ? Currency.getInstance("EUR").getCurrencyCode()
+
+            ? Currency.getInstance("IND").getCurrencyCode()
             : Currency.getInstance(Locale.getDefault()).getCurrencyCode();
         
         this.sTerminal = props.getProperty("payment.terminal");

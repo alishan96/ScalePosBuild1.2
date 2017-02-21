@@ -590,7 +590,7 @@
                               <ComponentRef name="m_jSubtotalEuros"/>
                             </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                              <ResourceString bundle="pos_messages.properties" key="label.taxcash" replaceFormat="AppLocal.getIntString(&quot;{key}&quot;)"/>
+                              <ResourceString bundle="pos_messages.properties" key="label.taxes" replaceFormat="AppLocal.getIntString(&quot;{key}&quot;)"/>
                             </Property>
                           </Properties>
                         </Component>

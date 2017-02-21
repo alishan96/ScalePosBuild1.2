@@ -44,6 +44,17 @@ public class CustomerTransaction {
     Double total;
     Date transactionDate;
     String customerName;
+/*    Double advance;
+    Double totalrecievable;
+
+    public Double getTotalrecievable() {
+        return totalrecievable;
+    }
+
+    public void setTotalrecievable(Double totalrecievable) {
+        this.totalrecievable = totalrecievable;
+    }
+    */
 
     /**
      * Main method to return all customer's transactions 
@@ -61,7 +72,7 @@ public class CustomerTransaction {
      * @param transactionDate
      * @param name
      */
-    public CustomerTransaction(String ticketId, String productName, String unit, Double amount, Double total, Date transactionDate, String name) {
+    public CustomerTransaction(String ticketId, String productName, String unit, Double amount, Double total, Date transactionDate, String name){//,Double advance, Double totalrecievable) {
         this.ticketId = ticketId;
         this.productName = productName;
         this.unit = unit;
@@ -69,8 +80,19 @@ public class CustomerTransaction {
         this.total = total;
         this.transactionDate = transactionDate;
         this.customerName = name;
+      /*  this.advance = advance;
+        this.totalrecievable = totalrecievable;*/
+    }
+/*
+    public Double getAdvance() {
+        return advance;
     }
 
+    public void setAdvance(Double advance) {
+        this.advance = advance;
+    }
+        */
+    
     /**
      *
      * @return ticket id string
@@ -200,6 +222,8 @@ public class CustomerTransaction {
                 Double total = dr.getDouble(5);
                 String dateValue = dr.getString(6);
                 String customerName = dr.getString(7);
+                //Double advance = dr.getDouble(8);
+               // Double totalrecievable = dr.getDouble(9);
 
 
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -209,7 +233,7 @@ public class CustomerTransaction {
                 } catch (ParseException ex) {
                     Logger.getLogger(DataLogicSales.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                return new CustomerTransaction(ticketId, productName, unit, amount, total, date, customerName);
+                return new CustomerTransaction(ticketId, productName, unit, amount, total, date, customerName);//, advance,totalrecievable);
             }
         };
     }

@@ -30,12 +30,12 @@ public class AppLocal {
     /**
      *
      */
-    public static final String APP_NAME = "Wanda POS";
+    public static final String APP_NAME = "Scale Pos";
 
     /**
      *
      */
-    public static final String APP_ID = "wandapos";
+    public static final String APP_ID = "scalepos";
 
     /**
      *

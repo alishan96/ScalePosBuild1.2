@@ -109,6 +109,8 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
      *
      */
     protected SentenceExec m_insertcash;
+    
+    protected SentenceExec m_insertcashvalue;
 
     /**
      *
@@ -414,21 +416,54 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
                     "SELECT MAX(HOSTSEQUENCE) FROM CLOSEDCASH WHERE HOST = ?",
                     SerializerWriteString.INSTANCE,
                     SerializerReadInteger.INSTANCE);
+/*ADDING*/
 
-            m_activecash = new StaticSentence(s, "SELECT HOST, HOSTSEQUENCE, DATESTART, DATEEND, NOSALES FROM CLOSEDCASH WHERE MONEY = ?", SerializerWriteString.INSTANCE, new SerializerReadBasic(new Datas[]{
+          m_activecash = new StaticSentence(s, "SELECT HOST, HOSTSEQUENCE, DATESTART, DATEEND, NOSALES FROM CLOSEDCASH WHERE MONEY = ?", SerializerWriteString.INSTANCE, new SerializerReadBasic(new Datas[]{
                 Datas.STRING,
                 Datas.INT,
                 Datas.TIMESTAMP,
                 Datas.TIMESTAMP,
                 Datas.INT}));
+          /* m_activecash = new StaticSentence(s, "SELECT HOST, HOSTSEQUENCE, NOSALES FROM CLOSEDCASH WHERE MONEY = ?", SerializerWriteString.INSTANCE, new SerializerReadBasic(new Datas[]{
+                Datas.STRING,
+                Datas.INT,
+              //  Datas.TIMESTAMP,
+               // Datas.TIMESTAMP,
+                Datas.INT}));*/
 
-            m_insertcash = new StaticSentence(s, "INSERT INTO CLOSEDCASH(MONEY, HOST, HOSTSEQUENCE, DATESTART, DATEEND) "
+          /*  m_insertcash = new StaticSentence(s, "INSERT INTO CLOSEDCASH(MONEY, HOST, HOSTSEQUENCE) "
+                    + "VALUES (?, ?, ?)", new SerializerWriteBasic(new Datas[]{
+                        Datas.STRING,
+                       // Datas.DOUBLE,
+                        Datas.STRING,
+                        Datas.INT}));
+                      //  Datas.DOUBLE,
+                       // Datas.TIMESTAMP,
+                       // Datas.TIMESTAMP}));*/
+                            
+           
+             m_insertcash = new StaticSentence(s, "INSERT INTO CLOSEDCASH(MONEY, HOST, HOSTSEQUENCE, DATESTART, DATEEND) "
                     + "VALUES (?, ?, ?, ?, ?)", new SerializerWriteBasic(new Datas[]{
                         Datas.STRING,
+                       // Datas.STRING,
                         Datas.STRING,
                         Datas.INT,
+                      //  Datas.DOUBLE,
                         Datas.TIMESTAMP,
-                        Datas.TIMESTAMP}));
+                        Datas.TIMESTAMP
+                    }));
+         /*   
+             m_insertcashvalue = new StaticSentence(s, "INSERT INTO CASHVALUE(MONEY, DATESTART, DATEEND) "
+                    + "VALUES (?, ?, ?)", new SerializerWriteBasic(new Datas[]{
+                        
+                        Datas.STRING,
+                      //  Datas.DOUBLE,
+                        //Datas.STRING,
+                        Datas.TIMESTAMP,
+                        Datas.TIMESTAMP
+                                     }));
+             */
+             /*ADDING*/
 
             m_draweropened = new StaticSentence(s, "INSERT INTO DRAWEROPENED ( NAME, TICKETID) "
                     + "VALUES (?, ?)", new SerializerWriteBasic(new Datas[]{
@@ -725,6 +760,10 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
      */
     public final void execInsertCash(Object[] cash) throws BasicException {
         m_insertcash.exec(cash);
+    }
+    
+    public final void execInsertCashvalue(Object[] cash) throws BasicException {
+        m_insertcashvalue.exec(cash);
     }
 
     /**

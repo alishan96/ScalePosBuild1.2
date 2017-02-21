@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#    Wanda POS - Africa's Gift to the World
-#    Copyright (c) 2014-2015 IT-Kamer & previous Unicenta POS and Wanda POS works
+#    Scale POS By Nexus Leads
+#    Copyright (c) 2014-2015  Nexus Leads
 #    www.erp-university-africa.com
 #	 http://sourceforge.net/projects/wandaposdapos
 #

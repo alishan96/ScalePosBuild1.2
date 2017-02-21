@@ -31,15 +31,17 @@
 	<image>Printer.Ticket.Logo</image>
 	<line></line>
 
-	<line><text align="center" length="42">Wanda POS</text></line>
-	<line><text align="center" length="42">Touch Friendly Point Of Sale</text></line>
-	<line><text align="center" length="42">Copyright (c) 2014-2015 Wanda POS</text></line>
+	<line><text align="center" length="42">Sky Vision</text></line>
+	<line><text align="center" length="42">A Product by Nexus Leads Consultants</text></line>
+	<line><text align="center" length="42">Copyright (c) 2015-2016 Nexus leads Scale POS</text></line>
 	<line><text align="center" length="42">Printer.TicketPreview</text></line>
 	<line></line>
 
 	#if (${ticket.ticketType} == 0)
 		<line><text align="left" length="15">Receipt:</text><text>${ticket.printId()}</text></line>
 	#end
+        
+      
 
 	#if (${ticket.ticketType} == 1)
 		<line><text align="left" length="15">Refund:</text><text>${ticket.printId()}</text></line>
